@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bienvenido sr.cliente</title>
+    <!--boorstrap-->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/yeti/bootstrap.min.css" integrity="sha384-mLBxp+1RMvmQmXOjBzRjqqr0dP9VHU2tb3FK6VB0fJN/AOu7/y+CAeYeWJZ4b3ii" crossorigin="anonymous">
+    <!--fuente de google fonts-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Roboto+Condensed&display=swap" rel="stylesheet">
+    <!--estilo de hoja main.css-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+    <main class="container p-4">
+        <h1 class="display-4 text-center mt-4" titulo>Bienvenido a su pagina de compra</h1> <!--titulo principal de la pagina-->
+         <!-- Logo de la página -->
+        <div class="text-center mt-4">
+            <img src="{{ url_for('static', filename='logos/logo.png') }}" alt="Logo de la página">
+        </div>
+        <header>
+            <!-- Imagen del carrito -->
+            <div id="carrito-container">
+                <a href="#" id="carrito-link">
+                    <img src="{{ url_for('static', filename='logos/carrito.png') }}" alt="Carrito de Compras">
+                </a>
+            </div>
+         </header>
+        <!-- Mensaje de lista de productos -->
+        <h2 class="mt-4 titulo">Productos disponibles</h2>
+
+        <!-- Tabla de productos -->
+        <table class="table table-striped">
+            <tr>
+                <th>Producto</th>
+                <th>Unidades Disponibles</th>
+                <th>Precio de Venta</th>
+                <th>Imagen</th>
+                <th>Descripción</th>
+                <th>Agregar producto</th>
+            </tr>
+            <tbody>
+                {% for p in producto %}
+                <tr>
+                    <td>{{ p.nombre_producto }}</td>
+                    <td>{{ p.stock }}</td>
+                    <td>{{ p.precio_venta }}</td>
+                    <td>
+                        <!--<button type="button" class="btn btn-link" data-toggle="modal" data-target="#imagen{{ p.id_producto }}">Imagen</button>-->
+                        {% if p.imagen %}
+                            <!--<button type="button" class="btn btn-link btn-imagen" data-toggle="modal" data-target="#imagen{{ p.id_producto }}" data-producto-id="{{ p.id_producto }}" data-imagen-src="{{ url_for('static', filename='fotos/' + p.imagen) }}">Imagen</button>-->
+                            <img src="{{ url_for('static', filename='fotos/' + p.imagen) }}" alt="p.descripcion">
+                        {% else %}
+                            <span>Sin imagen disponible</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <!--<button type="button" class="btn btn-link" data-toggle="modal" data-target="#descripcion{{ p.id_producto }}">Descripcion</button>-->
+                        <div class="modal-body">
+                        {{ p.descripcion }}
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                        <!-- Botón "Agregar al Carrito" -->
+                        <!--<span class="btn-text">Agregar al Carrito</span>-->
+                        <!--<button class="btn-agregar-carrito">Agregar al Carrito</button>-->
+                        <button class="btn-agregar-carrito" data-producto-id="{{ p.id_producto }}" data-precio="{{ p.precio_venta }}">Agregar al Carrito</button>
+                        </div>
+                    </td>
+                </tr>
+
+                {% endfor %}
+                <script>
+                    document.querySelectorAll(".btn-agregar-carrito").forEach(function(button)
+                </script>
+                <!-- Agrega estos scripts después de tu HTML actual -->
+                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+                <script>
+
+                    const carrito = [];
+
+                    // actualizar y mostrar el carrito
+                    function actualizarCarrito() {
+                        const carritoLista = document.getElementById('carrito-lista');
+                        const carritoTotal = document.getElementById('carrito-total');
+
+                        // Limpiar el contenido anterior del carrito
+                        carritoLista.innerHTML = '';
+
+                        let total = 0;
+
+                        // Recorre los productos en el carrito
+                        for (const producto of carrito) {
+                            const itemCarrito = document.createElement('li');
+                            itemCarrito.textContent = `${producto.cantidad} x ${producto.id} - Precio: ${producto.precio * producto.cantidad}`;
+                            carritoLista.appendChild(itemCarrito);
+
+                            total += producto.precio * producto.cantidad;
+                        }
+
+                        // Actualiza el total
+                        carritoTotal.textContent = total.toFixed(2);
+                    }
+
+                    $(document).ready(function () {
+                        // Escucha el evento de clic en los botones "Agregar al Carrito"
+                        $(".btn-agregar-carrito").click(function () {
+                            const productoId = $(this).data("producto-id");
+                            const precioProducto = parseFloat($(this).data("precio"));
+                            const cantidad = parseInt(prompt("Ingrese la cantidad:"));
+
+                            if (!isNaN(cantidad) && cantidad > 0) {
+                                // Verifica si el producto ya está en el carrito
+                                const productoExistente = carrito.find((producto) => producto.id === productoId);
+
+                                if (productoExistente) {
+                                    // Si el producto ya está en el carrito, actualiza la cantidad
+                                    productoExistente.cantidad += cantidad;
+                                } else {
+                                    // Si no está en el carrito, agrégalo
+                                    carrito.push({
+                                        id: productoId,
+                                        precio: precioProducto,
+                                        cantidad: cantidad
+                                    });
+                                }
+
+                                // Actualiza y muestra el carrito
+                                actualizarCarrito();
+
+                                alert(`Producto agregado al carrito: ${cantidad} x ${productoId}`);
+                            } else {
+                                alert("Cantidad no válida.");
+                            }
+                        });
+
+                        const carritoLink = $("#carrito-link");
+                        const carritoModal = $("#carrito-modal");
+
+                        carritoLink.click(function () {
+                            // Muestra el modal del carrito
+                            carritoModal.modal("show");
+                        });
+                    });
+                </script>
+            </tbody>
+        </table>
+    </main>
+
+</body>
+</html>
+
+
+
+
+
+
+     <!--<img src="{{ producto.imagen }}" alt="Imagen del Producto" width="300">   Ajusta el width según lo que necesites -->
+
